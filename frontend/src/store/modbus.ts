@@ -9,6 +9,7 @@ export const useModbusStore = defineStore('modbus', () => {
   const isPolling = ref(false)
   const pollInterval = ref(1000)
   const selectedDevice = ref<Device | null>(null)
+  const currentUser = ref('操作员')
 
   const criticalAlarms = computed(() => alarms.value.filter(a => a.level === 'critical' && !a.acknowledged))
   const onlineDevices = computed(() => devices.value.filter(d => d.online))
@@ -82,7 +83,11 @@ export const useModbusStore = defineStore('modbus', () => {
 
   function acknowledgeAlarm(id: string) {
     const a = alarms.value.find(a => a.id === id)
-    if (a) a.acknowledged = true
+    if (a) {
+      a.acknowledged = true
+      a.acknowledgedBy = currentUser.value
+      a.acknowledgedAt = Date.now()
+    }
   }
 
   function toggleDevice(id: string) {
@@ -91,7 +96,7 @@ export const useModbusStore = defineStore('modbus', () => {
   }
 
   return {
-    devices, alarms, historyData, isPolling, pollInterval, selectedDevice,
+    devices, alarms, historyData, isPolling, pollInterval, selectedDevice, currentUser,
     criticalAlarms, onlineDevices,
     initMockDevices, simulatePoll, acknowledgeAlarm, toggleDevice
   }

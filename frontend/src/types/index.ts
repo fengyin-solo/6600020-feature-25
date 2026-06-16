@@ -25,4 +25,6 @@ export interface Alarm {
   level: 'info' | 'warning' | 'critical'
   timestamp: number
   acknowledged: boolean
+  acknowledgedBy?: string
+  acknowledgedAt?: number
 }

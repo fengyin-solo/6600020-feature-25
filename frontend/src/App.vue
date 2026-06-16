@@ -62,15 +62,44 @@
       </div>
 
       <!-- Alarm List -->
-      <div class="bg-gray-900 rounded-xl p-3 max-h-48 overflow-y-auto">
-        <h3 class="text-sm text-gray-400 mb-2">告警记录</h3>
-        <div v-for="a in store.alarms.slice(0, 10)" :key="a.id"
-          class="flex justify-between text-xs bg-gray-800 rounded p-2 mb-1"
-          :class="{ 'border-l-4 border-red-500': a.level === 'critical', 'border-l-4 border-yellow-500': a.level === 'warning' }">
-          <span>{{ a.message }}</span>
-          <div class="flex gap-2">
-            <span class="text-gray-500">{{ new Date(a.timestamp).toLocaleTimeString() }}</span>
-            <button v-if="!a.acknowledged" @click="store.acknowledgeAlarm(a.id)" class="text-blue-400 hover:underline">确认</button>
+      <div class="bg-gray-900 rounded-xl p-3 max-h-64 overflow-y-auto">
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="text-sm text-gray-400">告警记录</h3>
+          <div class="flex gap-1">
+            <button @click="alarmFilter = 'all'"
+              class="text-xs px-2 py-0.5 rounded"
+              :class="alarmFilter === 'all' ? 'bg-orange-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'">
+              全部
+            </button>
+            <button @click="alarmFilter = 'unacknowledged'"
+              class="text-xs px-2 py-0.5 rounded"
+              :class="alarmFilter === 'unacknowledged' ? 'bg-orange-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'">
+              未确认
+            </button>
+            <button @click="alarmFilter = 'acknowledged'"
+              class="text-xs px-2 py-0.5 rounded"
+              :class="alarmFilter === 'acknowledged' ? 'bg-orange-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'">
+              已确认
+            </button>
+          </div>
+        </div>
+        <div v-for="a in filteredAlarms.slice(0, 20)" :key="a.id"
+          class="text-xs bg-gray-800 rounded p-2 mb-1"
+          :class="{
+            'border-l-4 border-red-500': a.level === 'critical' && !a.acknowledged,
+            'border-l-4 border-yellow-500': a.level === 'warning' && !a.acknowledged,
+            'border-l-4 border-gray-600 opacity-70': a.acknowledged
+          }">
+          <div class="flex justify-between">
+            <span>{{ a.message }}</span>
+            <div class="flex gap-2 items-center">
+              <span class="text-gray-500">{{ new Date(a.timestamp).toLocaleTimeString() }}</span>
+              <button v-if="!a.acknowledged" @click="store.acknowledgeAlarm(a.id)" class="text-blue-400 hover:underline">确认</button>
+              <span v-else class="text-green-400">✓ 已确认</span>
+            </div>
+          </div>
+          <div v-if="a.acknowledged" class="text-gray-500 mt-1">
+            处理人: {{ a.acknowledgedBy }} | 处理时间: {{ new Date(a.acknowledgedAt!).toLocaleString() }}
           </div>
         </div>
       </div>
@@ -79,12 +108,25 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useModbusStore } from './store/modbus'
 import TrendChart from './components/TrendChart.vue'
 
 const store = useModbusStore()
 let timer: number | null = null
+
+const alarmFilter = ref<'all' | 'unacknowledged' | 'acknowledged'>('all')
+
+const filteredAlarms = computed(() => {
+  switch (alarmFilter.value) {
+    case 'unacknowledged':
+      return store.alarms.filter(a => !a.acknowledged)
+    case 'acknowledged':
+      return store.alarms.filter(a => a.acknowledged)
+    default:
+      return store.alarms
+  }
+})
 
 function startPoll() {
   store.isPolling = true

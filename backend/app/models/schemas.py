@@ -16,3 +16,14 @@ class Device(BaseModel):
     slave_id: int
     online: bool
     registers: List[ModbusRegister] = []
+
+class Alarm(BaseModel):
+    id: str
+    device_id: str
+    register: str
+    message: str
+    level: str
+    timestamp: float
+    acknowledged: bool = False
+    acknowledged_by: Optional[str] = None
+    acknowledged_at: Optional[float] = None
