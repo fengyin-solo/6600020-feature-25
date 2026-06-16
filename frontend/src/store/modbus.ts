@@ -19,7 +19,7 @@ export const useModbusStore = defineStore('modbus', () => {
       {
         id: 'dev1', name: '温湿度传感器-A区', ip: '192.168.1.101', port: 502, slaveId: 1, online: true,
         registers: [
-          { address: 0, name: '温度', type: 'holding', value: 25.6, unit: '°C', updatedAt: Date.now() },
+          { address: 0, name: '温度', type: 'holding', value: 29.5, unit: '°C', updatedAt: Date.now() },
           { address: 1, name: '湿度', type: 'holding', value: 62.3, unit: '%RH', updatedAt: Date.now() },
           { address: 2, name: '露点', type: 'holding', value: 17.8, unit: '°C', updatedAt: Date.now() },
         ]
